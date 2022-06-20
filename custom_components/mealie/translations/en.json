@@ -5,8 +5,9 @@
         "title": "Mealie",
         "description": "If you need help with the configuration have a look here: https://github.com/mealie-recipes/mealie-hacs",
         "data": {
-          "username": "Username",
-          "password": "Password"
+          "username": "Username/Email",
+          "password": "Password",
+          "host": "Mealie Host (http://[ip]:[port])"
         }
       }
     },

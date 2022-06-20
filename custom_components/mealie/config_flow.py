@@ -1,12 +1,11 @@
 """Adds config flow for Mealie."""
 import voluptuous as vol
 from homeassistant import config_entries
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_HOST, CONF_ENABLED
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .api import MealieApiClient
-from .const import CONF_PASSWORD
-from .const import CONF_USERNAME
 from .const import DOMAIN
 from .const import PLATFORMS
 
@@ -31,7 +30,9 @@ class MealieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             valid = await self._test_credentials(
-                user_input[CONF_USERNAME], user_input[CONF_PASSWORD]
+                user_input[CONF_USERNAME],
+                user_input[CONF_PASSWORD],
+                user_input[CONF_HOST],
             )
             if valid:
                 return self.async_create_entry(
@@ -54,16 +55,20 @@ class MealieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema(
-                {vol.Required(CONF_USERNAME): str, vol.Required(CONF_PASSWORD): str}
+                {
+                    vol.Required(CONF_USERNAME): str,
+                    vol.Required(CONF_PASSWORD): str,
+                    vol.Required(CONF_HOST): str,
+                }
             ),
             errors=self._errors,
         )
 
-    async def _test_credentials(self, username, password):
+    async def _test_credentials(self, username, password, host):
         """Return true if credentials is valid."""
         try:
             session = async_create_clientsession(self.hass)
-            client = MealieApiClient(username, password, session)
+            client = MealieApiClient(username, password, host, session)
             await client.async_get_data()
             return True
         except Exception:  # pylint: disable=broad-except
