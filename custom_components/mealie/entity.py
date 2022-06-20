@@ -1,10 +1,10 @@
 """MealieEntity class"""
+from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import ATTRIBUTION
 from .const import DOMAIN
 from .const import NAME
-from .const import VERSION
 
 
 class MealieEntity(CoordinatorEntity):
@@ -21,9 +21,10 @@ class MealieEntity(CoordinatorEntity):
     def device_info(self):
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
-            "name": NAME,
-            "model": VERSION,
+            "name": str(self.config_entry.data.get(CONF_USERNAME)),
+            "model": str(self.coordinator.data.get("version")),
             "manufacturer": NAME,
+            "configuration_url": str(self.config_entry.data.get(CONF_HOST)),
         }
 
     @property

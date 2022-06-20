@@ -26,7 +26,7 @@ class MealieApiClient:
 
     async def async_get_data(self) -> dict:
         """Get data from the API."""
-        url = "https://jsonplaceholder.typicode.com/posts/1"
+        url = f"{self._host}/api/app/about"
         return await self.api_wrapper("get", url)
 
     async def async_set_title(self, value: str) -> None:
