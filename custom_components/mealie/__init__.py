@@ -9,7 +9,12 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_HOST
+from homeassistant.const import (
+    CONF_USERNAME,
+    CONF_PASSWORD,
+    CONF_HOST,
+    CONF_ACCESS_TOKEN,
+)
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -41,9 +46,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
     host = entry.data.get(CONF_HOST)
+    token = entry.data.get(CONF_ACCESS_TOKEN)
 
     session = async_get_clientsession(hass)
-    client = MealieApiClient(username, password, host, session)
+    client = MealieApiClient(username, password, host, session, token=token)
 
     coordinator = MealieDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()

@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import socket
+from urllib.parse import urlencode
 
 import aiohttp
 import async_timeout
@@ -11,18 +12,28 @@ TIMEOUT = 10
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 
-HEADERS = {"Content-type": "application/json; charset=UTF-8"}
-
 
 class MealieApiClient:
     def __init__(
-        self, username: str, password: str, host: str, session: aiohttp.ClientSession
+        self,
+        username: str,
+        password: str,
+        host: str,
+        session: aiohttp.ClientSession,
+        token: str = None,
     ) -> None:
         """Sample API Client."""
         self._username = username
         self._password = password
         self._host = host
+        self._token = token
         self._session = session
+        self._headers = {
+            "Content-type": "application/json; charset=UTF-8",
+            "Accept": "application/json",
+        }
+        if self._token is not None:
+            self._headers["Authorization"] = f"Bearer {self._token}"
 
     async def async_get_data(self) -> dict:
         """Get data from the API."""
@@ -34,10 +45,37 @@ class MealieApiClient:
         url = "https://jsonplaceholder.typicode.com/posts/1"
         await self.api_wrapper("patch", url, data={"title": value}, headers=HEADERS)
 
+    async def async_get_token(self) -> str:
+        """Gets an access token from the API."""
+        url = f"{self._host}/api/auth/token"
+        payload = urlencode(
+            {
+                "username": self._username,
+                "password": self._password,
+                "grant_type": "password",
+            }
+        )
+
+        response = await self._session.post(
+            url,
+            data=payload,
+            headers={"Content-type": "application/x-www-form-urlencoded"},
+        )
+        data = await response.json()
+        access_token = data.get("access_token")
+        self._headers["Authorization"] = f"Bearer {access_token}"
+        return self._headers
+
     async def api_wrapper(
-        self, method: str, url: str, data: dict = {}, headers: dict = {}
+        self,
+        method: str,
+        url: str,
+        data: dict = {},
+        headers: dict = {},
     ) -> dict:
         """Get information from the API."""
+        if self._token is None:
+            headers = await self.async_get_token()
         try:
             async with async_timeout.timeout(TIMEOUT):
                 if method == "get":
