@@ -81,13 +81,19 @@ class MealieDataUpdateCoordinator(DataUpdateCoordinator):
         """Initialize."""
         self.api = client
         self.platforms = []
+        self._data = {}
 
         super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
     async def _async_update_data(self):
         """Update data via library."""
         try:
-            return await self.api.async_get_data()
+
+            self._data['app/about'] = await self.api.async_get_api_app_about()
+            self._data[
+                'groups/mealplans/today'
+            ] = await self.api.async_get_api_groups_mealplans_today()
+            return self._data
         except Exception as exception:
             raise UpdateFailed() from exception
 

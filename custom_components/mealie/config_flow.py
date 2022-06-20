@@ -1,7 +1,7 @@
 """Adds config flow for Mealie."""
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_HOST, CONF_ENABLED
+from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_HOST
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
@@ -69,7 +69,7 @@ class MealieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         try:
             session = async_create_clientsession(self.hass)
             client = MealieApiClient(username, password, host, session)
-            await client.async_get_data()
+            await client.async_get_api_app_about()
             return True
         except Exception:  # pylint: disable=broad-except
             pass

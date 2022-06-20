@@ -35,15 +35,28 @@ class MealieApiClient:
         if self._token is not None:
             self._headers["Authorization"] = f"Bearer {self._token}"
 
-    async def async_get_data(self) -> dict:
+    async def async_get_api_app_about(self) -> dict:
         """Get data from the API."""
-        url = f"{self._host}/api/app/about"
+        url = "app/about"
         return await self.api_wrapper("get", url)
+
+    async def async_get_api_groups_mealplans_today(self) -> dict:
+        url = "groups/mealplans/today"
+        return await self.api_wrapper("get", url)
+
+    async def async_get_api_media_recipes_images(self, recipe_id):
+        filename = "min-original.webp"
+        url = f"media/recipes/{recipe_id}/images/{filename}"
+        return await self.api_wrapper(
+            "get", url, headers={"Content-type": "image/webp"}, bytes=True
+        )
 
     async def async_set_title(self, value: str) -> None:
         """Get data from the API."""
         url = "https://jsonplaceholder.typicode.com/posts/1"
-        await self.api_wrapper("patch", url, data={"title": value}, headers=HEADERS)
+        await self.api_wrapper(
+            "patch", url, data={"title": value}, headers=self._headers
+        )
 
     async def async_get_token(self) -> str:
         """Gets an access token from the API."""
@@ -72,15 +85,17 @@ class MealieApiClient:
         url: str,
         data: dict = {},
         headers: dict = {},
+        bytes: bool = False,
     ) -> dict:
         """Get information from the API."""
         if self._token is None:
             headers = await self.async_get_token()
+        url = f"{self._host}/api/{url}"
         try:
             async with async_timeout.timeout(TIMEOUT):
                 if method == "get":
                     response = await self._session.get(url, headers=headers)
-                    return await response.json()
+                    return await (response.read() if bytes else response.json())
 
                 elif method == "put":
                     await self._session.put(url, headers=headers, json=data)

@@ -11,6 +11,8 @@ class MealieEntity(CoordinatorEntity):
     def __init__(self, coordinator, config_entry):
         super().__init__(coordinator)
         self.config_entry = config_entry
+        self.endpoint = "app/about"
+        self.api = self.coordinator.api
 
     @property
     def unique_id(self):
@@ -19,12 +21,14 @@ class MealieEntity(CoordinatorEntity):
 
     @property
     def device_info(self):
+        about_data = self.coordinator.data.get("app/about")
+        config_data = self.config_entry.data
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
-            "name": str(self.config_entry.data.get(CONF_USERNAME)),
-            "model": str(self.coordinator.data.get("version")),
+            "name": str(config_data.get(CONF_USERNAME)),
+            "model": str(about_data.get("version")),
             "manufacturer": NAME,
-            "configuration_url": str(self.config_entry.data.get(CONF_HOST)),
+            "configuration_url": str(config_data.get(CONF_HOST)),
         }
 
     @property
@@ -32,6 +36,5 @@ class MealieEntity(CoordinatorEntity):
         """Return the state attributes."""
         return {
             "attribution": ATTRIBUTION,
-            "id": str(self.coordinator.data.get("id")),
             "integration": DOMAIN,
         }
