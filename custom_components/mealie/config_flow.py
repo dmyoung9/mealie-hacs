@@ -5,7 +5,7 @@ from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_HOST
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .api import MealieApiClient
+from .api import MealieApi
 from .const import DOMAIN
 from .const import PLATFORMS
 
@@ -68,7 +68,7 @@ class MealieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Return true if credentials is valid."""
         try:
             session = async_create_clientsession(self.hass)
-            client = MealieApiClient(username, password, host, session)
+            client = MealieApi(username, password, host, session)
             await client.async_get_api_app_about()
             return True
         except Exception:  # pylint: disable=broad-except

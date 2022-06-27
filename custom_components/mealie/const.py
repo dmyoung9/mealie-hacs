@@ -7,6 +7,7 @@ VERSION = "0.1.0"
 
 ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/mealie-recipes/mealie-hacs/issues"
+SOURCE_REPO = "hay-kot/mealie"
 
 # Icons
 ICON = "mdi:format-quote-close"
@@ -19,7 +20,8 @@ BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 SWITCH = "switch"
 CAMERA = "camera"
-PLATFORMS = [SENSOR, CAMERA]
+UPDATE = "update"
+PLATFORMS = [CAMERA, UPDATE, SENSOR]
 
 # Defaults
 DEFAULT_NAME = DOMAIN

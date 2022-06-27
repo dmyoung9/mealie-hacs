@@ -22,7 +22,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from .api import MealieApiClient
+from .api import MealieApi
 from .const import DOMAIN
 from .const import PLATFORMS
 from .const import STARTUP_MESSAGE
@@ -30,6 +30,17 @@ from .const import STARTUP_MESSAGE
 SCAN_INTERVAL = timedelta(seconds=30)
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
+
+
+def clean_obj(obj):
+    if isinstance(obj, dict):
+        for (k, v) in [(k, v) for (k, v) in obj.items() if not v or 'id' in k.lower()]:
+            obj.pop(k)
+    elif isinstance(obj, list):
+        for idx, i in enumerate(obj):
+            obj[idx] = clean_obj(i)
+
+    return obj
 
 
 async def async_setup(hass: HomeAssistant, config: Config):
@@ -46,10 +57,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     username = entry.data.get(CONF_USERNAME)
     password = entry.data.get(CONF_PASSWORD)
     host = entry.data.get(CONF_HOST)
-    token = entry.data.get(CONF_ACCESS_TOKEN)
 
     session = async_get_clientsession(hass)
-    client = MealieApiClient(username, password, host, session, token=token)
+    client = MealieApi(username, password, host, session)
 
     coordinator = MealieDataUpdateCoordinator(hass, client=client)
     await coordinator.async_refresh()
@@ -76,25 +86,29 @@ class MealieDataUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass: HomeAssistant,
-        client: MealieApiClient,
+        client: MealieApi,
     ) -> None:
         """Initialize."""
+        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
         self.api = client
         self.platforms = []
-        self._data = {}
-
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
 
     async def _async_update_data(self):
         """Update data via library."""
-        try:
 
-            self._data['app/about'] = await self.api.async_get_api_app_about()
-            self._data[
+        try:
+            data = {}
+            data['app/about'] = await self.api.async_get_api_app_about()
+            data[
                 'groups/mealplans/today'
             ] = await self.api.async_get_api_groups_mealplans_today()
-            return self._data
+            for idx, recipe in enumerate(data['groups/mealplans/today']):
+                data['groups/mealplans/today'][idx]['recipe'].update(
+                    await self.api.async_get_api_recipes(recipe['recipe']['slug'])
+                )
+            return data
         except Exception as exception:
+            _LOGGER.exception(exception)
             raise UpdateFailed() from exception
 
 
