@@ -33,8 +33,11 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 def clean_obj(obj):
+    """Returns a copy of the object with any empty values removed."""
     if isinstance(obj, dict):
-        for (k, v) in [(k, v) for (k, v) in obj.items() if not v or 'id' in k.lower()]:
+        for (k, v) in [
+            (k, v) for (k, v) in obj.items() if v in [None, [], {}] or 'id' in k.lower()
+        ]:
             obj.pop(k)
     elif isinstance(obj, list):
         for idx, i in enumerate(obj):
