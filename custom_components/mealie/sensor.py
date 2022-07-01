@@ -39,7 +39,7 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
             if title := i.get('title'):
                 text += f"\n## {title}\n"
             text += f"### Step {idx+1}\n\n{i.get('text')}\n"
-        return text
+        return None if text == "" else text
 
     @staticmethod
     def _format_ingredients(ingredients):
@@ -54,37 +54,40 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 text += f"{', ' + i.get('note', '') if i.get('note', '') else ''}\n"
             else:
                 text += f"- [ ] {i.get('note')}\n"
-        return text
+        return None if text == "" else text
 
     @staticmethod
     def _format_tags(tags):
-        return ', '.join([t['name'] for t in tags])
+        text = ', '.join([t['name'] for t in tags])
+        return None if text == "" else text
 
     @staticmethod
     def _format_categories(categories):
-        return ', '.join([c['name'] for c in categories])
+        text = ', '.join([c['name'] for c in categories])
+        return None if text == "" else text
 
     @staticmethod
     def _format_nutrition(nutrition):
-        nutrition = {k.replace("Content", ""): int(v) for k, v in nutrition.items()}
-        text = "| Type | Amount |\n|:-----|-------:|\n"
-        for n in nutrition:
+        text = ""
+        if nutrition:
+            text = "| Type | Amount |\n|:-----|-------:|\n"
+        for n in {k.replace("Content", ""): v for k, v in nutrition.items()}:
             text += f"| {n.title()} | {nutrition[n]} |\n"
-        return text
+        return None if text == "" else text
 
     @staticmethod
     def _format_tools(tools):
         text = ""
         for t in tools:
             text += f"- [ ] {t.get('name')}\n"
-        return text
+        return None if text == "" else text
 
     @staticmethod
     def _format_comments(comments):
         text = ""
         for c in sorted(comments, key=lambda x: x['createdAt']):
             text += f"* {c.get('text')} by {c.get('user', {}).get('username', 'Anonymous')} @ {c.get('createdAt')}\n"
-        return text
+        return None if text == "" else text
 
     @property
     def unique_id(self):
