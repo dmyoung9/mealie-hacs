@@ -37,7 +37,7 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
         text = ""
         for idx, i in enumerate(instructions):
             if title := i.get('title'):
-                text += f"## {title}\n"
+                text += f"\n## {title}\n"
             text += f"### Step {idx+1}\n\n{i.get('text')}\n"
         return text
 
@@ -46,7 +46,7 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
         text = ""
         for i in ingredients:
             if title := i.get('title'):
-                text += f"## {title}\n"
+                text += f"\n## {title}\n"
             if any(k in i for k in ['unit', 'food']):
                 text += f"- [ ]{' ' + str(i.get('quantity', '')) if i.get('quantity') else ''}"
                 for key in ['unit', 'food']:
