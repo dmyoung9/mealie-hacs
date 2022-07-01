@@ -56,6 +56,36 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 text += f"- [ ] {i.get('note')}\n"
         return text
 
+    @staticmethod
+    def _format_tags(tags):
+        return ', '.join([t['name'] for t in tags])
+
+    @staticmethod
+    def _format_categories(categories):
+        return ', '.join([c['name'] for c in categories])
+
+    @staticmethod
+    def _format_nutrition(nutrition):
+        nutrition = {k.replace("Content", ""): int(v) for k, v in nutrition.items()}
+        text = "| Type | Amount |\n|:-----|-------:|\n"
+        for n in nutrition:
+            text += f"| {n.title()} | {nutrition[n]} |\n"
+        return text
+
+    @staticmethod
+    def _format_tools(tools):
+        text = ""
+        for t in tools:
+            text += f"- [ ] {t.get('name')}\n"
+        return text
+
+    @staticmethod
+    def _format_comments(comments):
+        text = ""
+        for c in sorted(comments, key=lambda x: x['createdAt']):
+            text += f"* {c.get('text')} by {c.get('user', {}).get('username', 'Anonymous')} @ {c.get('createdAt')}\n"
+        return text
+
     @property
     def unique_id(self):
         """Return a unique ID to use for this entity."""
@@ -77,8 +107,8 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 "ingredients": self._format_ingredients(
                     clean_obj(recipe.get("recipeIngredient"))
                 ),
-                "tools": clean_obj(recipe.get("tools")),
-                "nutrition": clean_obj(recipe.get("nutrition")),
+                "tools": self._format_tools(clean_obj(recipe.get("tools"))),
+                "nutrition": self._format_nutrition(clean_obj(recipe.get("nutrition"))),
                 "yield": recipe.get("recipeYield"),
                 "total_time": recipe.get("totalTime"),
                 "prep_time": recipe.get("prepTime"),
@@ -90,10 +120,12 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 "assets": clean_obj(recipe.get("assets")),
                 "notes": clean_obj(recipe.get("notes")),
                 "extras": clean_obj(recipe.get("extras")),
-                "comments": clean_obj(recipe.get("comments")),
+                "comments": self._format_comments(clean_obj(recipe.get("comments"))),
                 "markdown": self.coordinator.data.get(
                     f"recipes/{recipe.get('slug')}/exports", {}
                 ).get("markdown"),
+                "tags": self._format_tags(recipe.get("tags", [])),
+                "categories": self._format_categories(recipe.get("recipeCategory", [])),
             }
 
         return clean_obj(attrs)
