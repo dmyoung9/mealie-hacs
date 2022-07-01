@@ -1,7 +1,11 @@
 {
   "name": "Mealie",
-  "hacs": "1.6.0",
-  "domains": ["binary_sensor", "sensor", "switch"],
-  "iot_class": "Cloud Polling",
-  "homeassistant": "0.118.0"
+  "hacs": "1.25.0",
+  "domains": [
+    "camera",
+    "sensor",
+    "update"
+  ],
+  "iot_class": "Local Polling",
+  "homeassistant": "2022.6.0"
 }
