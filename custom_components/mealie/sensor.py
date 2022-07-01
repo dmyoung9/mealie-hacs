@@ -101,14 +101,30 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
         if self.recipes:
             recipe = self.recipes[self.idx]
             attrs = {
-                "instructions": self._format_instructions(
-                    clean_obj(recipe.get("recipeInstructions"))
+                "instructions": clean_obj(recipe.get("recipeInstructions")),
+                "instructions_md": self._format_instructions(
+                    clean_obj(recipe.get("recipeInstructions", []))
                 ),
-                "ingredients": self._format_ingredients(
-                    clean_obj(recipe.get("recipeIngredient"))
+                "ingredients": clean_obj(recipe.get("recipeIngredient")),
+                "ingredients_md": self._format_ingredients(
+                    clean_obj(recipe.get("recipeIngredient", []))
                 ),
-                "tools": self._format_tools(clean_obj(recipe.get("tools"))),
-                "nutrition": self._format_nutrition(clean_obj(recipe.get("nutrition"))),
+                "tools": clean_obj(recipe.get("tools")),
+                "tools_md": self._format_tools(clean_obj(recipe.get("tools", {}))),
+                "nutrition": clean_obj(recipe.get("nutrition")),
+                "nutrition_md": self._format_nutrition(
+                    clean_obj(recipe.get("nutrition", {}))
+                ),
+                "comments": clean_obj(recipe.get("comments")),
+                "comments_md": self._format_comments(
+                    clean_obj(recipe.get("comments", []))
+                ),
+                "tags": clean_obj(recipe.get("tags")),
+                "tags_md": self._format_tags(recipe.get("tags", [])),
+                "categories": clean_obj(recipe.get("recipeCategory")),
+                "categories_md": self._format_categories(
+                    recipe.get("recipeCategory", [])
+                ),
                 "yield": recipe.get("recipeYield"),
                 "total_time": recipe.get("totalTime"),
                 "prep_time": recipe.get("prepTime"),
@@ -117,15 +133,9 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 "description": recipe.get("description"),
                 "name": recipe.get("name"),
                 "original_url": recipe.get("orgURL"),
-                "assets": clean_obj(recipe.get("assets")),
-                "notes": clean_obj(recipe.get("notes")),
-                "extras": clean_obj(recipe.get("extras")),
-                "comments": self._format_comments(clean_obj(recipe.get("comments"))),
-                "markdown": self.coordinator.data.get(
-                    f"recipes/{recipe.get('slug')}/exports", {}
-                ).get("markdown"),
-                "tags": self._format_tags(recipe.get("tags", [])),
-                "categories": self._format_categories(recipe.get("recipeCategory", [])),
+                "assets": clean_obj(recipe.get("assets", [])),
+                "notes": clean_obj(recipe.get("notes", [])),
+                "extras": clean_obj(recipe.get("extras", {})),
             }
 
         return clean_obj(attrs)
