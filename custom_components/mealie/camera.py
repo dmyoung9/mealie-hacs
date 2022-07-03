@@ -42,7 +42,3 @@ class MealPlanCamera(MealPlanEntity, Camera):
                 self.recipes[self.idx]['id']
             )
         )
-
-    async def stream_source(self) -> str | None:
-        """Return the source of the stream."""
-        return None

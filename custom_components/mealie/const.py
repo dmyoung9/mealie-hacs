@@ -5,15 +5,16 @@ DOMAIN = "mealie"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "0.1.0"
 
-ATTRIBUTION = "Data provided by http://jsonplaceholder.typicode.com/"
 ISSUE_URL = "https://github.com/mealie-recipes/mealie-hacs/issues"
 SOURCE_REPO = "hay-kot/mealie"
 
 # Icons
-ICON = "mdi:format-quote-close"
-
-# Device classes
-BINARY_SENSOR_DEVICE_CLASS = "connectivity"
+ICONS = {
+    "breakfast": "mdi:egg-fried",
+    "lunch": "mdi:bread-slice",
+    "dinner": "mdi:pot-steam",
+    "side": "mdi:bowl-mix-outline",
+}
 
 # Platforms
 BINARY_SENSOR = "binary_sensor"
