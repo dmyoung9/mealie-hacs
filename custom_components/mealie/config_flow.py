@@ -1,4 +1,6 @@
 """Adds config flow for Mealie."""
+from __future__ import annotations
+
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_HOST

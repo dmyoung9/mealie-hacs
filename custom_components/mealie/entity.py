@@ -1,4 +1,6 @@
 """MealieEntity class"""
+from __future__ import annotations
+
 import time
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME

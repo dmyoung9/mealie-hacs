@@ -1,4 +1,6 @@
 """Sensor platform for Mealie."""
+from __future__ import annotations
+
 from homeassistant.components.camera import Camera
 
 from .const import CAMERA
