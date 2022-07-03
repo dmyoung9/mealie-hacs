@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 from functools import wraps
 import logging

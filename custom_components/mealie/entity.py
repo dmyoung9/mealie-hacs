@@ -1,19 +1,14 @@
 """MealieEntity class"""
+from __future__ import annotations
+
 import time
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION
 from .const import DOMAIN
+from .const import ICONS
 from .const import NAME
-
-ICONS = {
-    "breakfast": "mdi:egg-fried",
-    "lunch": "mdi:bread-slice",
-    "dinner": "mdi:pot-steam",
-    "side": "mdi:bowl-mix-outline",
-}
 
 
 class MealieEntity(CoordinatorEntity):
@@ -44,14 +39,6 @@ class MealieEntity(CoordinatorEntity):
             "suggested_area": "Kitchen",
         }
 
-    @property
-    def device_state_attributes(self):
-        """Return the state attributes."""
-        return {
-            "attribution": ATTRIBUTION,
-            "integration": DOMAIN,
-        }
-
 
 class MealPlanEntity(MealieEntity):
     """mealie Meal Plan Entity class."""
@@ -75,11 +62,7 @@ class MealPlanEntity(MealieEntity):
 
     def _get_recipes(self):
         mealplans = self.coordinator.data.get(self.endpoint, {})
-        self.recipes = [
-            i['recipe']
-            for i in mealplans
-            if i['entryType'] == self.meal
-        ]
+        self.recipes = [i['recipe'] for i in mealplans if i['entryType'] == self.meal]
         self.idx = self._get_time_based_index()
 
     def _get_time_based_index(self, interval=60):

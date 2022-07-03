@@ -1,4 +1,6 @@
 """Sensor platform for Mealie."""
+from __future__ import annotations
+
 from homeassistant.components.camera import Camera
 
 from .const import CAMERA
@@ -40,7 +42,3 @@ class MealPlanCamera(MealPlanEntity, Camera):
                 self.recipes[self.idx]['id']
             )
         )
-
-    async def stream_source(self) -> str | None:
-        """Return the source of the stream."""
-        return None

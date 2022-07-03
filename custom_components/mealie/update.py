@@ -1,4 +1,6 @@
 """Sensor platform for Mealie."""
+from __future__ import annotations
+
 import aiohttp
 
 from homeassistant.components.update import UpdateEntity, UpdateEntityFeature
