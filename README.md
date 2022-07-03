@@ -73,6 +73,6 @@ The original project used code mainly taken from [@Ludeeus](https://github.com/l
 [maintenance-shield]: https://img.shields.io/badge/maintainer-dmyoung9-blue.svg?style=for-the-badge
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [pre-commit-shield]: https://img.shields.io/badge/pre--commit-enabled-brightgreen?style=for-the-badge
-[releases-shield]: https://img.shields.io/github/release/mealie-recipes/mealie-hacs.svg?style=for-the-badge
-[releases]: https://github.com/mealie-recipes/mealie-hacs/releases
-[user_profile]: https://github.com/mealie-recipes
+[releases-shield]: https://img.shields.io/github/release/dmyoung9/mealie-hacs.svg?style=for-the-badge
+[releases]: https://github.com/dmyoung9/mealie-hacs/releases
+[user_profile]: https://github.com/dmyoung9
