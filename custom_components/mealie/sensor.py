@@ -73,8 +73,10 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
         text = ""
         if nutrition:
             text = "| Type | Amount |\n|:-----|-------:|\n"
-        for n in {k.replace("Content", ""): v for k, v in nutrition.items()}:
-            text += f"| {n.title()} | {nutrition[n]} |\n"
+
+        formatted = {k.replace("Content", ""): v for k, v in nutrition.items()}
+        for n in formatted:
+            text += f"| {n.title()} | {formatted[n]} |\n"
         return None if text == "" else text
 
     @staticmethod
