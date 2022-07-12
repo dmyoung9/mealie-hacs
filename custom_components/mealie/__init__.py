@@ -102,6 +102,7 @@ class MealieDataUpdateCoordinator(DataUpdateCoordinator):
 
         try:
             data = {}
+            data['host'] = self.api.get_host()
             data['app/about'] = await self.api.async_get_api_app_about()
             data[
                 'groups/mealplans/today'

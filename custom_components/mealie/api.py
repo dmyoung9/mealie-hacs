@@ -72,6 +72,9 @@ class MealieApi:
             "Accept": "application/json",
         }
 
+    def get_host(self):
+        return self._host
+
     @apirequest
     async def _get(
         self,

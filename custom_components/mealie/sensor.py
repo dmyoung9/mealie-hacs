@@ -140,6 +140,7 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 "description": recipe.get("description"),
                 "name": recipe.get("name"),
                 "original_url": recipe.get("orgURL"),
+                "mealie_url": f"{self.coordinator.data.get('host', '')}/recipe/{recipe.get('slug', '')}",
                 "assets": clean_obj(recipe.get("assets", [])),
                 "notes": clean_obj(recipe.get("notes", [])),
                 "extras": clean_obj(recipe.get("extras", {})),
