@@ -4,40 +4,33 @@ from __future__ import annotations
 import time
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
-from .const import ICONS
-from .const import NAME
+from .const import DOMAIN, ICONS, NAME
+
+from .coordinator import MealieDataUpdateCoordinator
 
 
-class MealieEntity(CoordinatorEntity):
+class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
     """mealie Entity class."""
 
-    def __init__(self, coordinator, config_entry):
+    def __init__(self, coordinator: MealieDataUpdateCoordinator) -> None:
+        """Initialize the Mealie entity"""
         super().__init__(coordinator)
-        self.api = self.coordinator.api
-        self.coordinator = coordinator
-        self.config_entry = config_entry
-        self.endpoint = "app/about"
 
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this entity."""
-        return self.config_entry.entry_id
+        self._attr_unique_id = self.coordinator.config_entry.entry_id
 
-    @property
-    def device_info(self):
-        about_data = self.coordinator.data.get("app/about")
-        config_data = self.config_entry.data
-        return {
-            "identifiers": {(DOMAIN, self.config_entry.entry_id)},
-            "name": str(config_data.get(CONF_USERNAME)),
-            "model": str(about_data.get("version")),
-            "manufacturer": NAME,
-            "configuration_url": str(config_data.get(CONF_HOST)),
-            "suggested_area": "Kitchen",
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id)},
+            name=self.coordinator.config_entry.data.get(CONF_USERNAME),
+            sw_version=self.coordinator.data.about.version,
+            manufacturer=NAME,
+            configuration_url=self.coordinator.config_entry.data.get(CONF_HOST),
+            suggested_area="Kitchen",
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
 
 class MealPlanEntity(MealieEntity):
@@ -62,7 +55,7 @@ class MealPlanEntity(MealieEntity):
 
     def _get_recipes(self):
         mealplans = self.coordinator.data.get(self.endpoint, {})
-        self.recipes = [i['recipe'] for i in mealplans if i['entryType'] == self.meal]
+        self.recipes = [i["recipe"] for i in mealplans if i["entryType"] == self.meal]
         self.idx = self._get_time_based_index()
 
     def _get_time_based_index(self, interval=60):
