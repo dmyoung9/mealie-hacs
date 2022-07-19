@@ -47,7 +47,7 @@ class MealPlanEntity(MealieEntity):
 
     @property
     def name(self):
-        return None if not self.recipe else self.recipe.name
+        return f"Meal plan {self.meal}"
 
     @property
     def icon(self):
