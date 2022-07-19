@@ -7,6 +7,7 @@ https://github.com/mealie-recipes/mealie-hacs
 import asyncio
 import logging
 from datetime import timedelta
+from .coordinator import MealieDataUpdateCoordinator
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -19,8 +20,6 @@ from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .api import MealieApi
 from .const import DOMAIN
@@ -38,7 +37,7 @@ def clean_obj(obj):
         obj = {
             k: v
             for (k, v) in obj.items()
-            if v not in [None, [], {}] and 'id' not in k.lower()
+            if v not in [None, [], {}] and "id" not in k.lower()
         }
     elif isinstance(obj, list):
         for idx, i in enumerate(obj):
@@ -82,38 +81,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     entry.add_update_listener(async_reload_entry)
     return True
-
-
-class MealieDataUpdateCoordinator(DataUpdateCoordinator):
-    """Class to manage fetching data from the API."""
-
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        client: MealieApi,
-    ) -> None:
-        """Initialize."""
-        super().__init__(hass, _LOGGER, name=DOMAIN, update_interval=SCAN_INTERVAL)
-        self.api = client
-        self.platforms = []
-
-    async def _async_update_data(self):
-        """Update data via library."""
-
-        try:
-            data = {}
-            data['app/about'] = await self.api.async_get_api_app_about()
-            data[
-                'groups/mealplans/today'
-            ] = await self.api.async_get_api_groups_mealplans_today()
-            for idx, recipe in enumerate(data['groups/mealplans/today']):
-                data['groups/mealplans/today'][idx]['recipe'].update(
-                    await self.api.async_get_api_recipes(recipe['recipe']['slug'])
-                )
-            return data
-        except Exception as exception:
-            _LOGGER.exception(exception)
-            raise UpdateFailed() from exception
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

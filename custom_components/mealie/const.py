@@ -1,9 +1,19 @@
 """Constants for Mealie."""
 # Base component constants
+from datetime import timedelta
+import logging
+
+
 NAME = "Mealie"
 DOMAIN = "mealie"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "0.1.0"
+
+LOGGER = logging.getLogger(__package__)
+
+
+UPDATE_INTERVAL = timedelta(seconds=30)
+
 
 ISSUE_URL = "https://github.com/mealie-recipes/mealie-hacs/issues"
 SOURCE_REPO = "hay-kot/mealie"
