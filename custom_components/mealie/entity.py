@@ -1,9 +1,10 @@
 """MealieEntity class"""
 from __future__ import annotations
 
-import time
+from .models import Recipe
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
+from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -20,8 +21,6 @@ class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
         """Initialize the Mealie entity"""
         super().__init__(coordinator)
 
-        self._attr_unique_id = self.coordinator.config_entry.entry_id
-
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, self.coordinator.config_entry.entry_id)},
             name=self.coordinator.config_entry.data.get(CONF_USERNAME),
@@ -36,35 +35,39 @@ class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
 class MealPlanEntity(MealieEntity):
     """mealie Meal Plan Entity class."""
 
-    def __init__(self, meal, coordinator, config_entry):
-        super().__init__(coordinator, config_entry)
-        self.config_entry = config_entry
-        self.endpoint = "groups/mealplans/today"
+    def __init__(self, meal, coordinator):
+        super().__init__(
+            coordinator,
+        )
+
+        self._attr_unique_id = meal
+
         self.meal = meal
-        self.idx = None
-        self.recipes = []
+        self.recipe: Recipe | None = None
 
     @property
     def name(self):
-        return f"Meal Plan {self.meal.title()}"
+        return None if not self.recipe else self.recipe.name
 
     @property
     def icon(self):
         """Return the icon of the camera."""
         return ICONS.get(self.meal)
 
-    def _get_recipes(self):
-        mealplans = self.coordinator.data.get(self.endpoint, {})
-        self.recipes = [i["recipe"] for i in mealplans if i["entryType"] == self.meal]
-        self.idx = self._get_time_based_index()
+    @property
+    def native_value(self):
+        return None if not self.recipe else self.recipe.name
 
-    def _get_time_based_index(self, interval=60):
-        return round(
-            ((int(time.time()) % interval) / interval) * (len(self.recipes) - 1)
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self.recipe = next(
+            (
+                mealPlan.recipe
+                for mealPlan in self.coordinator.data.mealPlans
+                if mealPlan.entryType == self.meal
+            ),
+            None,
         )
 
-    async def async_update(self):
-        self._get_recipes()
-
-    async def async_added_to_hass(self) -> None:
-        self._get_recipes()
+        self.async_write_ha_state()
