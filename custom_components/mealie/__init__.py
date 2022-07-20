@@ -4,25 +4,25 @@ Custom integration to integrate Mealie with Home Assistant.
 For more details about this integration, please refer to
 https://github.com/mealie-recipes/mealie-hacs
 """
-import asyncio
 import logging
 from datetime import timedelta
-from .coordinator import MealieDataUpdateCoordinator
+from config.custom_components.mealie.models import MealieData
+
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_USERNAME,
     CONF_PASSWORD,
     CONF_HOST,
-    CONF_ACCESS_TOKEN,
 )
 from homeassistant.core import Config
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import MealieApi
-from .const import DOMAIN
+from .api import MealieApi, MealieError
+from .const import DOMAIN, LOGGER
 from .const import PLATFORMS
 from .const import STARTUP_MESSAGE
 
@@ -64,7 +64,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     session = async_get_clientsession(hass)
     client = MealieApi(username, password, host, session)
 
-    coordinator = MealieDataUpdateCoordinator(hass, client=client)
+    async def async_update_mealie() -> MealieData:
+        try:
+            return await client.async_get_updated_mealie_data()
+        except MealieError as err:
+            raise UpdateFailed("Mealie API communication error") from err
+
+    coordinator: DataUpdateCoordinator[MealieData] = DataUpdateCoordinator(
+        hass,
+        LOGGER,
+        name=f"{DOMAIN}",
+        update_interval=SCAN_INTERVAL,
+        update_method=async_update_mealie,
+    )
+
     await coordinator.async_config_entry_first_refresh()
 
     if not coordinator.last_update_success:
