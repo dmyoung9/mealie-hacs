@@ -1,23 +1,25 @@
 """MealieEntity class"""
 from __future__ import annotations
+from abc import abstractmethod
 
-from .models import Recipe
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
 
+from .models import MealieData, Recipe
 from .const import DOMAIN, ICONS, NAME
 
-from .coordinator import MealieDataUpdateCoordinator
 
-
-class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
+class MealieEntity(CoordinatorEntity[DataUpdateCoordinator[MealieData]]):
     """mealie Entity class."""
 
-    def __init__(self, coordinator: MealieDataUpdateCoordinator) -> None:
+    def __init__(self, coordinator: DataUpdateCoordinator[MealieData]) -> None:
         """Initialize the Mealie entity"""
         super().__init__(coordinator)
 
@@ -31,6 +33,16 @@ class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
             entry_type=DeviceEntryType.SERVICE,
         )
 
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._process_update()
+        super()._handle_coordinator_update()
+
+    @callback
+    @abstractmethod
+    def _process_update(self) -> None:
+        """Process an update from the coordinator"""
+
 
 class MealPlanEntity(MealieEntity):
     """mealie Meal Plan Entity class."""
@@ -40,26 +52,17 @@ class MealPlanEntity(MealieEntity):
             coordinator,
         )
 
-        self._attr_unique_id = meal
-
         self.meal = meal
         self.recipe: Recipe | None = None
 
-    @property
-    def name(self):
-        return f"Meal plan {self.meal}"
+        self._attr_unique_id = self.meal
+        self._attr_name = f"Meal plan {self.meal}"
+        self._attr_icon = ICONS.get(self.meal)
 
-    @property
-    def icon(self):
-        """Return the icon of the camera."""
-        return ICONS.get(self.meal)
-
-    @property
-    def native_value(self):
-        return None if not self.recipe else self.recipe.name
+        self._process_update()
 
     @callback
-    def _handle_coordinator_update(self) -> None:
+    def _process_update(self) -> None:
         """Handle updated data from the coordinator."""
         self.recipe = next(
             (
@@ -69,5 +72,3 @@ class MealPlanEntity(MealieEntity):
             ),
             None,
         )
-
-        self.async_write_ha_state()

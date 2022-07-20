@@ -37,6 +37,7 @@ class About(BaseModel):
     """About model."""
 
     version: str
+    versionLatest: str
     # TODO: add configuration URL here?
 
 
