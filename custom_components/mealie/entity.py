@@ -1,6 +1,7 @@
 """MealieEntity class"""
 from __future__ import annotations
 from abc import abstractmethod
+from .coordinator import MealieDataUpdateCoordinator
 
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
@@ -9,17 +10,15 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
-    DataUpdateCoordinator,
 )
 
-from .models import MealieData, Recipe
-from .const import DOMAIN, ICONS, NAME
+from .models import MealPlan, Recipe
 
 
-class MealieEntity(CoordinatorEntity[DataUpdateCoordinator[MealieData]]):
+class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
     """mealie Entity class."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[MealieData]) -> None:
+    def __init__(self, coordinator: MealieDataUpdateCoordinator) -> None:
         """Initialize the Mealie entity"""
         super().__init__(coordinator)
 
@@ -54,6 +53,7 @@ class MealPlanEntity(MealieEntity):
 
         self.meal = meal
         self.recipe: Recipe | None = None
+        self.meal_plan: MealPlan | None = None
 
         self._attr_unique_id = self.meal
         self._attr_name = f"Meal plan {self.meal}"
@@ -64,11 +64,16 @@ class MealPlanEntity(MealieEntity):
     @callback
     def _process_update(self) -> None:
         """Handle updated data from the coordinator."""
-        self.recipe = next(
+
+        self.meal_plan = next(
             (
-                mealPlan.recipe
+                mealPlan
                 for mealPlan in self.coordinator.data.mealPlans
                 if mealPlan.entryType == self.meal
             ),
             None,
+        )
+
+        self.recipe = (
+            self.meal_plan.recipe if self.meal_plan.recipeId is not None else None
         )

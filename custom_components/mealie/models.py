@@ -1,18 +1,11 @@
-from typing import Optional, List
+from dataclasses import dataclass
+
 from pydantic import BaseModel
+from typing import Any, Optional
 from homeassistant.backports.enum import StrEnum
 
 
 """Mealie API objects"""
-
-
-class EntryTypes(StrEnum):
-    """Enum to represent the entry types."""
-
-    BREAKFAST = "breakfast"
-    LUNCH = "lunch"
-    DINNER = "dinner"
-    SIDE = "side"
 
 
 class Recipe(BaseModel):
@@ -20,6 +13,29 @@ class Recipe(BaseModel):
 
     name: str
     slug: str
+    id: str
+
+    recipeIngredient: list[Any]  #  TODO: we can type this
+    tools: list[Any]  # TODO: we can type this
+    tags: list[Any]  # TODO: we can type this
+    recipeCategory: list[Any]  # TODO: We can type this
+
+    recipeYield: Optional[str]
+    totalTime: Optional[str]
+    prepTime: Optional[str]
+    cookTime: Optional[str]
+    performTime: Optional[str]
+    rating: Optional[str]
+    description: Optional[str]
+    orgURL: Optional[str]
+
+    # TODO: This isn't included in the API request
+    # recipeInstructions: Any
+    # nutrition: Any
+    # comments: Any
+    # assets: list[Any]  # TODO: we can type this
+    # notes: list[Any]  # TODO: we can type this
+    # extras: list[Any]  # TODO: we can type this
 
 
 class MealPlan(BaseModel):
@@ -37,7 +53,7 @@ class About(BaseModel):
     """About model."""
 
     version: str
-    versionLatest: str
+    # versionLatest: str
     # TODO: add configuration URL here?
 
 
@@ -48,4 +64,4 @@ class MealieData:
         self.mealPlans = []
 
     mealPlans: list[MealPlan]
-    about: About
+    about: Optional[About]

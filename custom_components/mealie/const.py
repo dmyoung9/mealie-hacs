@@ -51,15 +51,20 @@ PLATFORMS = [SENSOR]
 # Defaults
 DEFAULT_NAME = DOMAIN
 
-CONF_EXTENDED = "extended"
+CONST_INCLUDE_INSTRUCTIONS = "instructions"
+CONST_INCLUDE_INGREDIENTS = "ingredients"
+CONST_INCLUDE_TAGS = "tags"
+CONST_INCLUDE_TOOLS = "tools"
+CONST_INCLUDE_NUTRITION = "nutrition"
+CONST_INCLUDE_COMMENTS = "comments"
+CONST_INCLUDE_CATEGORIES = "categories"
 
-
-STARTUP_MESSAGE = f"""
--------------------------------------------------------------------
-{NAME}
-Version: {VERSION}
-This is a custom integration!
-If you have any issues with this you need to open an issue here:
-{ISSUE_URL}
--------------------------------------------------------------------
-"""
+CONST_INCLUDES: Final = [
+    CONST_INCLUDE_INSTRUCTIONS,
+    CONST_INCLUDE_INGREDIENTS,
+    CONST_INCLUDE_TAGS,
+    CONST_INCLUDE_TOOLS,
+    CONST_INCLUDE_NUTRITION,
+    CONST_INCLUDE_COMMENTS,
+    CONST_INCLUDE_CATEGORIES,
+]

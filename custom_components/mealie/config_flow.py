@@ -4,13 +4,19 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_PASSWORD, CONF_USERNAME, CONF_HOST
+from homeassistant.const import CONF_INCLUDE, CONF_PASSWORD, CONF_USERNAME, CONF_HOST
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 import homeassistant.helpers.config_validation as cv
 from .api import MealieApi
-from .const import CONF_ENTRIES, CONST_ENTRIES, DOMAIN, NAME
+from .const import (
+    CONF_ENTRIES,
+    CONST_ENTRIES,
+    CONST_INCLUDES,
+    DOMAIN,
+    NAME,
+)
 
 
 class MealieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
@@ -71,6 +77,10 @@ class MealieFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_ENTRIES, default=CONST_ENTRIES): cv.multi_select(
                 CONST_ENTRIES
             ),
+            vol.Optional(
+                CONF_INCLUDE,
+                default=CONST_INCLUDES,
+            ): cv.multi_select(CONST_INCLUDES),
         }
 
         return self.async_show_form(
@@ -113,5 +123,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 CONF_ENTRIES,
                 default=self.config_entry.options.get(CONF_ENTRIES, CONST_ENTRIES),
             ): cv.multi_select(CONST_ENTRIES),
+            vol.Optional(
+                CONF_INCLUDE,
+                default=self.config_entry.options.get(CONF_INCLUDE, CONST_INCLUDES),
+            ): cv.multi_select(CONST_INCLUDES),
         }
+
         return self.async_show_form(step_id="init", data_schema=vol.Schema(data_schema))
