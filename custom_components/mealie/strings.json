@@ -5,9 +5,9 @@
         "title": "Mealie",
         "description": "If you need help with the configuration have a look here: https://github.com/mealie-recipes/mealie-hacs",
         "data": {
-          "host": "Mealie Host (http://[ip]:[port])",
-          "username": "Username/Email",
-          "password": "Password"
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]"
         }
       },
       "options": {
@@ -17,10 +17,10 @@
       }
     },
     "error": {
-      "invalid_auth": "Invalid authentication"
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth]"
     },
     "abort": {
-      "single_instance_allowed": "Already configured. Only a single configuration possible."
+      "single_instance_allowed": "[%key:common::config_flow::abort::single_instance_allowed%]"
     }
   },
   "options": {

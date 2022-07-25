@@ -2,6 +2,7 @@
 # Base component constants
 from datetime import timedelta
 import logging
+from typing import Final
 
 
 NAME = "Mealie"
@@ -11,8 +12,21 @@ VERSION = "0.1.0"
 
 LOGGER = logging.getLogger(__package__)
 
-
 UPDATE_INTERVAL = timedelta(seconds=30)
+
+CONF_ENTRIES = "entries"
+
+CONST_ENTRY_BREAKFAST = "breakfast"
+CONST_ENTRY_LUNCH = "lunch"
+CONST_ENTRY_DINNER = "dinner"
+CONST_ENTRY_SIDE = "side"
+
+CONST_ENTRIES: Final = [
+    CONST_ENTRY_BREAKFAST,
+    CONST_ENTRY_LUNCH,
+    CONST_ENTRY_DINNER,
+    CONST_ENTRY_SIDE,
+]
 
 
 ISSUE_URL = "https://github.com/mealie-recipes/mealie-hacs/issues"
@@ -32,10 +46,12 @@ SENSOR = "sensor"
 SWITCH = "switch"
 CAMERA = "camera"
 UPDATE = "update"
-PLATFORMS = [CAMERA, UPDATE, SENSOR]
+PLATFORMS = [SENSOR]
 
 # Defaults
 DEFAULT_NAME = DOMAIN
+
+CONF_EXTENDED = "extended"
 
 
 STARTUP_MESSAGE = f"""
