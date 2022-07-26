@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-import logging
 import socket
 from typing import Any
 
@@ -11,7 +10,7 @@ import async_timeout
 
 from .const import LOGGER
 
-from .models import About, MealPlan, MealieData, Recipe
+from .models import About, MealPlan, Recipe
 
 TIMEOUT = 10
 
@@ -72,6 +71,8 @@ class MealieApi:
             contents = await response.read()
             response.close()
 
+            LOGGER.error(contents)
+
             if content_type == "application/json":
                 raise MealieError(response.status, json.loads(contents.decode("utf8")))
             raise MealieError(response.status, {"message": contents.decode("utf8")})
@@ -99,16 +100,6 @@ class MealieApi:
         """Get recipe details from the API."""
         response = await self.request(f"recipes/{recipe_slug}")
         return Recipe.parse_obj(response)
-
-    async def async_get_api_media_recipes_images(self, recipe_id) -> bytes | None:
-        """Get the image for a recipe from the API."""
-        filename = "min-original.webp"
-        response = await self.request(
-            f"media/recipes/{recipe_id}/images/{filename}",
-            headers={"Content-type": "image/webp"},
-        )
-        # LOGGER.warn(response)
-        return response
 
     async def async_get_api_auth_token(self) -> str:
         """Gets an access token from the API."""

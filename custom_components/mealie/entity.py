@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .models import MealPlan, Recipe
-from .const import DOMAIN, ICONS, NAME
+from .const import DOMAIN, ICONS, LOGGER, NAME
 
 
 class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):

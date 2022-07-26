@@ -15,6 +15,8 @@ class Recipe(BaseModel):
     slug: str
     id: str
 
+    image: Optional[str]
+
     recipeIngredient: list[Any]  #  TODO: we can type this
     tools: list[Any]  # TODO: we can type this
     tags: list[Any]  # TODO: we can type this
@@ -59,6 +61,9 @@ class About(BaseModel):
 
 class MealieData:
     """Mealie API data."""
+
+    def __init__(self):
+        self.mealPlans = []
 
     mealPlans: list[MealPlan] = []
     about: Optional[About] = None

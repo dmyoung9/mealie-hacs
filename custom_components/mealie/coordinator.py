@@ -4,8 +4,11 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    CONST_INCLUDE_ASSETS,
     CONST_INCLUDE_COMMENTS,
+    CONST_INCLUDE_EXTRAS,
     CONST_INCLUDE_INSTRUCTIONS,
+    CONST_INCLUDE_NOTES,
     CONST_INCLUDE_NUTRITION,
     DOMAIN,
     LOGGER,
@@ -30,6 +33,9 @@ class MealieDataUpdateCoordinator(DataUpdateCoordinator[MealieData]):
             CONST_INCLUDE_INSTRUCTIONS,
             CONST_INCLUDE_NUTRITION,
             CONST_INCLUDE_COMMENTS,
+            CONST_INCLUDE_EXTRAS,
+            CONST_INCLUDE_NOTES,
+            CONST_INCLUDE_ASSETS,
         ]
 
         entry_options = entry.options.get(CONF_INCLUDE, [])
@@ -63,8 +69,3 @@ class MealieDataUpdateCoordinator(DataUpdateCoordinator[MealieData]):
         except Exception as exception:
             LOGGER.exception(exception)
             raise UpdateFailed() from exception
-
-    async def async_load_recipe_img(self, recipe_id: str) -> bytes:
-        """Load an image for a recipe."""
-
-        return await self.api.async_get_api_media_recipes_images(recipe_id)
