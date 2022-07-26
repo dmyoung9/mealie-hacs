@@ -1,60 +1,20 @@
 from __future__ import annotations
 
 import asyncio
-from functools import wraps
-import logging
+import json
 import socket
-from urllib.parse import urlencode
+from typing import Any
 
 import aiohttp
 import async_timeout
 
+from .models import About, MealPlan, Recipe
+
 TIMEOUT = 10
 
 
-_LOGGER: logging.Logger = logging.getLogger(__package__)
-
-
-def apirequest(func) -> dict:
-    """Decorator for request methods."""
-
-    @wraps(func)
-    async def wrapper(self, *args, **kwargs) -> dict | bytes | None:
-        """Get information from the API."""
-
-        if not kwargs.get('headers'):
-            kwargs['headers'] = self._headers
-
-        if not kwargs.get('skip_auth') and "Authorization" not in kwargs.get('headers'):
-            kwargs['headers'].update(await self.async_get_api_auth_token())
-
-        try:
-            async with async_timeout.timeout(TIMEOUT):
-                return await func(self, *args, **kwargs)
-
-        except asyncio.TimeoutError as exception:
-            _LOGGER.error(
-                "Timeout error fetching information from %s - %s",
-                args[0],
-                exception,
-            )
-
-        except (KeyError, TypeError) as exception:
-            _LOGGER.error(
-                "Error parsing information from %s - %s",
-                args[0],
-                exception,
-            )
-        except (aiohttp.ClientError, socket.gaierror) as exception:
-            _LOGGER.error(
-                "Error fetching information from %s - %s",
-                args[0],
-                exception,
-            )
-        except Exception as exception:  # pylint: disable=broad-except
-            _LOGGER.error("Something really wrong happened! - %s", exception)
-
-    return wrapper
+class MealieError(Exception):
+    """Mealie error."""
 
 
 class MealieApi:
@@ -63,131 +23,96 @@ class MealieApi:
     def __init__(
         self, username: str, password: str, host: str, session: aiohttp.ClientSession
     ) -> None:
+        self._session = session
+
+        self._host = host
         self._username = username
         self._password = password
-        self._host = host
-        self._session = session
+
         self._headers = {
             "Content-type": "application/json; charset=UTF-8",
             "Accept": "application/json",
         }
 
-    @apirequest
-    async def _get(
-        self,
-        url: str,
-        params: dict = None,
-        data: dict = None,
-        headers: dict = None,
-        as_bytes: bool = False,
-        skip_auth: bool = False,
-    ):
-        response = await self._session.get(
-            f"{self._host}/api/" + url,
-            params=params,
-            json=data,
-            headers=headers,
-        )
-        return await (response.read() if as_bytes else response.json())
+    async def request(
+        self, uri: str, method: str = "GET", headers={}, skip_auth=False, data={}
+    ) -> dict[str, Any]:
+        """Handle a request to the Mealie instance"""
+        url = f"{self._host}/api/{uri}"
 
-    @apirequest
-    async def _put(
-        self,
-        url: str,
-        params: dict = None,
-        data: dict = None,
-        headers: dict = None,
-    ):
-        return await self._session.put(
-            f"{self._host}/api/" + url,
-            params=params,
-            json=data,
-            headers=headers,
-        )
+        if self._session is None:
+            self._session = aiohttp.ClientSession()
+            # self._close_session = True
 
-    @apirequest
-    async def _patch(
-        self,
-        url: str,
-        params: dict = None,
-        data: dict = None,
-        headers: dict = None,
-    ):
-        return await self._session.patch(
-            f"{self._host}/api/" + url,
-            params=params,
-            json=data,
-            headers=headers,
-        )
+        if not skip_auth and self._headers.get("Authorization") is None:
+            await self.async_get_api_auth_token()
 
-    @apirequest
-    async def _post(
-        self,
-        url: str,
-        params: dict = None,
-        data: dict = None,
-        headers: dict = None,
-        skip_auth: bool = True,
-    ):
-        return await self._session.post(
-            f"{self._host}/api/" + url,
-            params=params,
-            data=data,
-            headers=headers,
-        )
+        headers = self._headers | headers
 
-    async def async_get_api_app_about(self) -> dict:
+        try:
+            async with async_timeout.timeout(TIMEOUT):
+                response = await self._session.request(
+                    method=method, url=url, data=data, headers=headers
+                )
+
+        except asyncio.TimeoutError as exception:
+            raise MealieError(
+                "Timeout occurred while connecting to the Mealie API."
+            ) from exception
+        except (aiohttp.ClientError, socket.gaierror) as exception:
+            raise MealieError(
+                "Error occurred while communicating with Mealie."
+            ) from exception
+
+        content_type = response.headers.get("Content-Type", "")
+        if response.status // 100 in [4, 5]:
+            contents = await response.read()
+            response.close()
+
+            if content_type == "application/json":
+                raise MealieError(response.status, json.loads(contents.decode("utf8")))
+            raise MealieError(response.status, {"message": contents.decode("utf8")})
+
+        if "application/json" in content_type:
+            return await response.json()
+
+        if "image/webp" in content_type:
+            return await response.read()
+
+        text = await response.text()
+        return {"message": text}
+
+    async def async_get_api_app_about(self) -> About:
         """Get data from the API."""
-        return await self._get("app/about", skip_auth=True)
+        response = await self.request("app/about")
+        return About.parse_obj(response)
 
-    async def async_get_api_groups_mealplans_today(self) -> dict:
+    async def async_get_api_groups_mealplans_today(self) -> list[MealPlan]:
         """Get today's mealplan from the API."""
-        return await self._get("groups/mealplans/today")
+        response = await self.request("groups/mealplans/today")
+        return [MealPlan.parse_obj(mealplan) for mealplan in response]
 
-    async def async_get_api_recipes(self, recipe_slug) -> dict:
+    async def async_get_api_recipe(self, recipe_slug) -> Recipe:
         """Get recipe details from the API."""
-        return await self._get(f"recipes/{recipe_slug}")
-
-    async def async_get_api_recipes_exports(self, recipe_slug, template="recipes.md"):
-        """Get formatted recipe data from the API."""
-        return await self._get(
-            f"recipes/{recipe_slug}/exports",
-            params={"template_name": template},
-            as_bytes=True,
-        )
-
-    async def async_get_api_media_recipes_images(self, recipe_id) -> bytes:
-        """Get the image for a recipe from the API."""
-        filename = "min-original.webp"
-        url = f"media/recipes/{recipe_id}/images/{filename}"
-        return await self._get(
-            url, headers={"Content-type": "image/webp"}, as_bytes=True
-        )
-
-    async def async_set_title(self, value: str) -> None:
-        """Get data from the API."""
-        url = "https://jsonplaceholder.typicode.com/posts/1"
-        await self._patch(url, data={"title": value}, headers=self._headers)
+        response = await self.request(f"recipes/{recipe_slug}")
+        return Recipe.parse_obj(response)
 
     async def async_get_api_auth_token(self) -> str:
         """Gets an access token from the API."""
-        url = "auth/token"
-        payload = urlencode(
-            {
-                "username": self._username,
-                "password": self._password,
-                "grant_type": "password",
-            }
-        )
+        payload = {
+            "username": self._username,
+            "password": self._password,
+            "grant_type": "password",
+        }
 
-        response = await self._post(
-            url,
+        response = await self.request(
+            "auth/token",
+            method="POST",
             data=payload,
             headers={"Content-type": "application/x-www-form-urlencoded"},
             skip_auth=True,
         )
 
-        data = await response.json()
-        access_token = data.get("access_token")
+        access_token = response.get("access_token")
         self._headers["Authorization"] = f"Bearer {access_token}"
         return {"Authorization": f"Bearer {access_token}"}

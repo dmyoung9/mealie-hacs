@@ -1,77 +1,76 @@
 """MealieEntity class"""
 from __future__ import annotations
 
-import time
+from abc import abstractmethod
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
+from homeassistant.core import callback
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
-from .const import ICONS
-from .const import NAME
+from .const import DOMAIN, ICONS, NAME
+from .coordinator import MealieDataUpdateCoordinator
+from .models import MealPlan, Recipe
 
 
-class MealieEntity(CoordinatorEntity):
+class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
     """mealie Entity class."""
 
-    def __init__(self, coordinator, config_entry):
+    def __init__(self, coordinator: MealieDataUpdateCoordinator) -> None:
+        """Initialize the Mealie entity"""
         super().__init__(coordinator)
-        self.api = self.coordinator.api
-        self.coordinator = coordinator
-        self.config_entry = config_entry
-        self.endpoint = "app/about"
 
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this entity."""
-        return self.config_entry.entry_id
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, self.coordinator.config_entry.entry_id)},
+            name=self.coordinator.config_entry.data.get(CONF_USERNAME),
+            sw_version=self.coordinator.data.about.version,
+            manufacturer=NAME,
+            configuration_url=self.coordinator.config_entry.data.get(CONF_HOST),
+            suggested_area="Kitchen",
+            entry_type=DeviceEntryType.SERVICE,
+        )
 
-    @property
-    def device_info(self):
-        about_data = self.coordinator.data.get("app/about")
-        config_data = self.config_entry.data
-        return {
-            "identifiers": {(DOMAIN, self.config_entry.entry_id)},
-            "name": str(config_data.get(CONF_USERNAME)),
-            "model": str(about_data.get("version")),
-            "manufacturer": NAME,
-            "configuration_url": str(config_data.get(CONF_HOST)),
-            "suggested_area": "Kitchen",
-        }
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        self._process_update()
+        super()._handle_coordinator_update()
+
+    @callback
+    @abstractmethod
+    def _process_update(self) -> None:
+        """Process an update from the coordinator"""
 
 
 class MealPlanEntity(MealieEntity):
     """mealie Meal Plan Entity class."""
 
-    def __init__(self, meal, coordinator, config_entry):
-        super().__init__(coordinator, config_entry)
-        self.config_entry = config_entry
-        self.endpoint = "groups/mealplans/today"
-        self.meal = meal
-        self.idx = None
-        self.recipes = []
-
-    @property
-    def name(self):
-        return f"Meal Plan {self.meal.title()}"
-
-    @property
-    def icon(self):
-        """Return the icon of the camera."""
-        return ICONS.get(self.meal)
-
-    def _get_recipes(self):
-        mealplans = self.coordinator.data.get(self.endpoint, {})
-        self.recipes = [i['recipe'] for i in mealplans if i['entryType'] == self.meal]
-        self.idx = self._get_time_based_index()
-
-    def _get_time_based_index(self, interval=60):
-        return round(
-            ((int(time.time()) % interval) / interval) * (len(self.recipes) - 1)
+    def __init__(self, meal, coordinator):
+        super().__init__(
+            coordinator,
         )
 
-    async def async_update(self):
-        self._get_recipes()
+        self.meal = meal
+        self.recipe: Recipe | None = None
+        self.meal_plan: MealPlan | None = None
 
-    async def async_added_to_hass(self) -> None:
-        self._get_recipes()
+        self._attr_unique_id = self.meal
+        self._attr_name = f"Meal plan {self.meal}"
+        self._attr_icon = ICONS.get(self.meal)
+
+        self._process_update()
+
+    @callback
+    def _process_update(self) -> None:
+        """Handle updated data from the coordinator."""
+
+        self.meal_plan = next(
+            (
+                mealPlan
+                for mealPlan in self.coordinator.data.mealPlans
+                if mealPlan.entryType == self.meal
+            ),
+            None,
+        )
+
+        self.recipe = self.meal_plan.recipe if self.meal_plan is not None else None
