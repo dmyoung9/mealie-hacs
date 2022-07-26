@@ -12,7 +12,8 @@
       },
       "options": {
         "data": {
-          "entries": "Select the entry types to track"
+          "entries": "Select the entry types to track",
+          "include": "Select additional information to include"
         }
       }
     },
@@ -27,7 +28,8 @@
     "step": {
       "init": {
         "data": {
-          "entries": "Select the entry types to track"
+          "entries": "Select the entry types to track",
+          "include": "Select additional information to include"
         }
       }
     }
