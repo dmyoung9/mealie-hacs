@@ -9,12 +9,11 @@ from typing import Any
 import aiohttp
 import async_timeout
 
-from config.custom_components.mealie.models import About, MealPlan, MealieData
+from .const import LOGGER
+
+from .models import About, MealPlan, MealieData, Recipe
 
 TIMEOUT = 10
-
-
-_LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 class MealieError(Exception):
@@ -80,12 +79,15 @@ class MealieApi:
         if "application/json" in content_type:
             return await response.json()
 
+        if "image/webp" in content_type:
+            return await response.read()
+
         text = await response.text()
         return {"message": text}
 
     async def async_get_api_app_about(self) -> About:
         """Get data from the API."""
-        response = await self.request("admin/about")
+        response = await self.request("app/about")
         return About.parse_obj(response)
 
     async def async_get_api_groups_mealplans_today(self) -> list[MealPlan]:
@@ -93,13 +95,20 @@ class MealieApi:
         response = await self.request("groups/mealplans/today")
         return [MealPlan.parse_obj(mealplan) for mealplan in response]
 
-    # async def async_get_api_media_recipes_images(self, recipe_id) -> bytes:
-    #     """Get the image for a recipe from the API."""
-    #     filename = "min-original.webp"
-    #     url = f"media/recipes/{recipe_id}/images/{filename}"
-    #     return await self.request(
-    #         url, headers={"Content-type": "image/webp"}, as_bytes=True
-    #     )
+    async def async_get_api_recipe(self, recipe_slug) -> Recipe:
+        """Get recipe details from the API."""
+        response = await self.request(f"recipes/{recipe_slug}")
+        return Recipe.parse_obj(response)
+
+    async def async_get_api_media_recipes_images(self, recipe_id) -> bytes | None:
+        """Get the image for a recipe from the API."""
+        filename = "min-original.webp"
+        response = await self.request(
+            f"media/recipes/{recipe_id}/images/{filename}",
+            headers={"Content-type": "image/webp"},
+        )
+        # LOGGER.warn(response)
+        return response
 
     async def async_get_api_auth_token(self) -> str:
         """Gets an access token from the API."""

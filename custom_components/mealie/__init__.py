@@ -23,6 +23,7 @@ from .const import DOMAIN, PLATFORMS
 
 SCAN_INTERVAL = timedelta(seconds=30)
 
+
 async def async_setup(hass: HomeAssistant, config: Config):
     """Set up this integration using YAML is not supported."""
     return True
@@ -40,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     session = async_get_clientsession(hass)
     client = MealieApi(username, password, host, session)
 
-    coordinator = MealieDataUpdateCoordinator(hass, client=client)
+    coordinator = MealieDataUpdateCoordinator(hass, client=client, entry=entry)
 
     await coordinator.async_config_entry_first_refresh()
 

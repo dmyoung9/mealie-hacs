@@ -30,12 +30,12 @@ class Recipe(BaseModel):
     orgURL: Optional[str]
 
     # TODO: This isn't included in the API request
-    # recipeInstructions: Any
-    # nutrition: Any
-    # comments: Any
-    # assets: list[Any]  # TODO: we can type this
-    # notes: list[Any]  # TODO: we can type this
-    # extras: list[Any]  # TODO: we can type this
+    recipeInstructions: Optional[Any]
+    nutrition: Optional[Any] = None
+    comments: Optional[list[Any]]
+    assets: Optional[list[Any]]  # TODO: we can type this
+    notes: Optional[list[Any]]  # TODO: we can type this
+    extras: Optional[dict[str, Any]]  # TODO: we can type this
 
 
 class MealPlan(BaseModel):
@@ -60,9 +60,5 @@ class About(BaseModel):
 class MealieData:
     """Mealie API data."""
 
-    def __init__(self):
-        self.mealPlans = []
-        self.about = None
-
-    mealPlans: list[MealPlan]
-    about: Optional[About]
+    mealPlans: list[MealPlan] = []
+    about: Optional[About] = None

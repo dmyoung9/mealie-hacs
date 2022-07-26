@@ -12,11 +12,18 @@ from homeassistant.components.sensor import SensorEntity
 from .coordinator import MealieDataUpdateCoordinator
 from .const import (
     CONF_ENTRIES,
+    CONST_INCLUDE_ASSETS,
     CONST_INCLUDE_CATEGORIES,
+    CONST_INCLUDE_COMMENTS,
+    CONST_INCLUDE_EXTRAS,
     CONST_INCLUDE_INGREDIENTS,
+    CONST_INCLUDE_INSTRUCTIONS,
+    CONST_INCLUDE_NOTES,
+    CONST_INCLUDE_NUTRITION,
     CONST_INCLUDE_TAGS,
     CONST_INCLUDE_TOOLS,
     DOMAIN,
+    LOGGER,
 )
 from .entity import MealPlanEntity
 
@@ -50,7 +57,7 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
         return getattr(self.recipe, prop) if self.recipe is not None else None
 
     def get_attribute_list_from_recipe(self, prop) -> list:
-        """Extract an attribute from the recipe."""
+        """Extract an attribute from the recipe as a list."""
         data = self.get_attribute_from_recipe(prop)
         return data if data is not None else []
 
@@ -145,31 +152,47 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
                 ]
             )
 
-        # if self._options[CONF_INCLUDE_INSTRUCTIONS]:
-        #     instructions = _clean_obj(
-        #         self.get_attribute_list_from_recipe("recipeInstructions")
-        #     )
-        #     self._attr_extra_state_attributes.update(
-        #         [
-        #             ("instructions", instructions),
-        #             ("instructions_md", _format_instructions(instructions)),
-        #         ]
-        #     )
+        if CONST_INCLUDE_INSTRUCTIONS in include_options:
+            instructions = _clean_obj(
+                self.get_attribute_list_from_recipe("recipeInstructions")
+            )
+            self._attr_extra_state_attributes.update(
+                [
+                    ("instructions", instructions),
+                    ("instructions_md", _format_instructions(instructions)),
+                ]
+            )
 
-        #             "nutrition": self.clean_obj(recipe.get("nutrition")),
-        #             "nutrition_md": self._format_nutrition(
-        #                 self.clean_obj(recipe.get("nutrition", {}))
-        #             ),
-        #             "comments": self.clean_obj(recipe.get("comments")),
-        #             "comments_md": self._format_comments(
-        #                 self.clean_obj(recipe.get("comments", []))
-        #             ),
-        #
-        #             "assets": self.clean_obj(recipe.get("assets", [])),
-        #             "notes": self.clean_obj(recipe.get("notes", [])),
-        #             "extras": self.clean_obj(recipe.get("extras", {})),
-        # ]
-        # )
+        if CONST_INCLUDE_NUTRITION in include_options:
+            nutrition = _clean_obj(self.get_attribute_from_recipe("nutrition"))
+            self._attr_extra_state_attributes.update(
+                [
+                    ("nutrition", nutrition),
+                    ("nutrition_md", _format_nutrition(nutrition)),
+                ]
+            )
+
+        if CONST_INCLUDE_COMMENTS in include_options:
+            comments = _clean_obj(self.get_attribute_list_from_recipe("comments"))
+            LOGGER.info(comments)
+            self._attr_extra_state_attributes.update(
+                [
+                    ("comments", comments),
+                    ("comments_md", _format_comments(comments)),
+                ]
+            )
+
+        if CONST_INCLUDE_ASSETS in include_options:
+            assets = _clean_obj(self.get_attribute_list_from_recipe("assets"))
+            self._attr_extra_state_attributes.update([("assets", assets)])
+
+        if CONST_INCLUDE_NOTES in include_options:
+            notes = _clean_obj(self.get_attribute_list_from_recipe("notes"))
+            self._attr_extra_state_attributes.update([("notes", notes)])
+
+        if CONST_INCLUDE_EXTRAS in include_options:
+            extras = _clean_obj(self.get_attribute_from_recipe("extras"))
+            self._attr_extra_state_attributes.update([("extras", extras)])
 
 
 def _format_instructions(instructions):
@@ -212,8 +235,8 @@ def _format_nutrition(nutrition):
     text = ""
     if nutrition:
         text = "| Type | Amount |\n|:-----|-------:|\n"
-    for n in {k.replace("Content", ""): v for k, v in nutrition.items()}:
-        text += f"| {n.title()} | {nutrition[n]} |\n"
+        for n in {k.replace("Content", ""): v for k, v in nutrition.items()}:
+            text += f"| {n.title()} | {nutrition[n]} |\n"
     return None if text == "" else text
 
 
