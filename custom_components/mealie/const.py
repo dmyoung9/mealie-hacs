@@ -46,7 +46,7 @@ SENSOR = "sensor"
 SWITCH = "switch"
 CAMERA = "camera"
 UPDATE = "update"
-PLATFORMS = [SENSOR]
+PLATFORMS = [SENSOR, UPDATE]
 
 # Defaults
 DEFAULT_NAME = DOMAIN

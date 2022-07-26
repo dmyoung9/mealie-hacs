@@ -59,7 +59,11 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
         super()._process_update()
 
         self._attr_native_value = (
-            self.recipe.name if self.recipe is not None else self.meal_plan.title
+            self.recipe.name
+            if self.recipe is not None
+            else self.meal_plan.title
+            if self.meal_plan is not None
+            else None
         )
 
         self._attr_extra_state_attributes.update(
@@ -72,8 +76,22 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
 
         self._attr_extra_state_attributes.update(
             [
-                ("type", "note" if self.recipe is None else "recipe"),
-                ("description", self.get_attribute_from_recipe("description")),
+                (
+                    "type",
+                    "recipe"
+                    if self.recipe is not None
+                    else "note"
+                    if self.meal_plan is not None
+                    else None,
+                ),
+                (
+                    "description",
+                    self.get_attribute_from_recipe("description")
+                    if self.recipe is not None
+                    else self.meal_plan.text
+                    if self.meal_plan is not None
+                    else None,
+                ),
                 ("yield", self.get_attribute_from_recipe("recipeYield")),
                 ("total_time", self.get_attribute_from_recipe("totalTime")),
                 ("prep_time", self.get_attribute_from_recipe("prepTime")),

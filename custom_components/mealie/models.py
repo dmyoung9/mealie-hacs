@@ -62,6 +62,7 @@ class MealieData:
 
     def __init__(self):
         self.mealPlans = []
+        self.about = None
 
     mealPlans: list[MealPlan]
     about: Optional[About]

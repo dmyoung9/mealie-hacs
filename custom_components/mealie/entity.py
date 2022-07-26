@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import (
 )
 
 from .models import MealPlan, Recipe
+from .const import DOMAIN, ICONS, NAME
 
 
 class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):
@@ -74,6 +75,4 @@ class MealPlanEntity(MealieEntity):
             None,
         )
 
-        self.recipe = (
-            self.meal_plan.recipe if self.meal_plan.recipeId is not None else None
-        )
+        self.recipe = self.meal_plan.recipe if self.meal_plan is not None else None

@@ -24,7 +24,9 @@ class MealieDataUpdateCoordinator(DataUpdateCoordinator[MealieData]):
 
         try:
             data = MealieData()
-            # data.about = About.parse_obj(await self.api.async_get_api_app_about())
+
+            data.about = About.parse_obj(await self.api.async_get_api_app_about())
+
             mealplans = await self.api.async_get_api_groups_mealplans_today()
 
             for mealplan in mealplans:

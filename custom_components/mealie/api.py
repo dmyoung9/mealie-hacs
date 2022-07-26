@@ -83,15 +83,6 @@ class MealieApi:
         text = await response.text()
         return {"message": text}
 
-    async def async_get_updated_mealie_data(self) -> MealieData:
-        """Update data from Mealie."""
-        data = MealieData()
-
-        data.about = await self.async_get_api_app_about()
-        data.mealPlans = await self.async_get_api_groups_mealplans_today()
-
-        return data
-
     async def async_get_api_app_about(self) -> About:
         """Get data from the API."""
         response = await self.request("admin/about")
