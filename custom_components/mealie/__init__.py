@@ -5,21 +5,16 @@ For more details about this integration, please refer to
 https://github.com/mealie-recipes/mealie-hacs
 """
 from datetime import timedelta
-from .coordinator import MealieDataUpdateCoordinator
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_USERNAME,
-    CONF_PASSWORD,
-    CONF_HOST,
-)
-from homeassistant.core import Config
-from homeassistant.core import HomeAssistant
+from homeassistant.const import CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from homeassistant.core import Config, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import MealieApi
 from .const import DOMAIN, PLATFORMS
+from .coordinator import MealieDataUpdateCoordinator
 
 SCAN_INTERVAL = timedelta(seconds=30)
 

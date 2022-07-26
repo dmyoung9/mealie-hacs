@@ -1,15 +1,13 @@
 """Sensor platform for Mealie."""
 from __future__ import annotations
+
 from typing import Any
 
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-
 from homeassistant.const import CONF_HOST, CONF_INCLUDE
 from homeassistant.core import callback
 
-from homeassistant.components.sensor import SensorEntity
-
-from .coordinator import MealieDataUpdateCoordinator
 from .const import (
     CONF_ENTRIES,
     CONST_INCLUDE_ASSETS,
@@ -25,6 +23,7 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
+from .coordinator import MealieDataUpdateCoordinator
 from .entity import MealPlanEntity
 
 
@@ -174,7 +173,6 @@ class MealPlanSensor(MealPlanEntity, SensorEntity):
 
         if CONST_INCLUDE_COMMENTS in include_options:
             comments = _clean_obj(self.get_attribute_list_from_recipe("comments"))
-            LOGGER.info(comments)
             self._attr_extra_state_attributes.update(
                 [
                     ("comments", comments),

@@ -4,7 +4,6 @@ from datetime import timedelta
 import logging
 from typing import Final
 
-
 NAME = "Mealie"
 DOMAIN = "mealie"
 DOMAIN_DATA = f"{DOMAIN}_data"

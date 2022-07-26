@@ -1,9 +1,9 @@
 from dataclasses import dataclass
+from typing import Any, Optional
 
 from pydantic import BaseModel
-from typing import Any, Optional
-from homeassistant.backports.enum import StrEnum
 
+from homeassistant.backports.enum import StrEnum
 
 """Mealie API objects"""
 

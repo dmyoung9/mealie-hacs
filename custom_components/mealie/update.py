@@ -1,13 +1,11 @@
 """Sensor platform for Mealie."""
 from __future__ import annotations
 
-from .coordinator import MealieDataUpdateCoordinator
-
 from homeassistant.components.update import UpdateEntity, UpdateEntityFeature
 from homeassistant.core import callback
 
-from .const import DOMAIN
-from .const import UPDATE
+from .const import DOMAIN, UPDATE
+from .coordinator import MealieDataUpdateCoordinator
 from .entity import MealieEntity
 
 

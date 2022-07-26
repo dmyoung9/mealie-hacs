@@ -1,18 +1,14 @@
 """Sensor platform for Mealie."""
 from __future__ import annotations
-from homeassistant.const import CONF_HOST
-
-from homeassistant.helpers.httpx_client import get_async_client
-from .coordinator import MealieDataUpdateCoordinator
-
 
 from homeassistant.components.camera import Camera
+from homeassistant.const import CONF_HOST
 from homeassistant.core import callback
+from homeassistant.helpers.httpx_client import get_async_client
 
-from .const import CONF_ENTRIES
-from .const import DOMAIN
+from .const import CONF_ENTRIES, DOMAIN
+from .coordinator import MealieDataUpdateCoordinator
 from .entity import MealPlanEntity
-
 
 GET_IMAGE_TIMEOUT = 10
 

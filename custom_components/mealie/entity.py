@@ -1,19 +1,17 @@
 """MealieEntity class"""
 from __future__ import annotations
-from abc import abstractmethod
-from .coordinator import MealieDataUpdateCoordinator
 
+from abc import abstractmethod
 
 from homeassistant.const import CONF_HOST, CONF_USERNAME
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-)
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .const import DOMAIN, ICONS, NAME
+from .coordinator import MealieDataUpdateCoordinator
 from .models import MealPlan, Recipe
-from .const import DOMAIN, ICONS, LOGGER, NAME
 
 
 class MealieEntity(CoordinatorEntity[MealieDataUpdateCoordinator]):

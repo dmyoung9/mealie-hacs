@@ -3,6 +3,7 @@ from homeassistant.const import CONF_INCLUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .api import MealieApi
 from .const import (
     CONST_INCLUDE_ASSETS,
     CONST_INCLUDE_COMMENTS,
@@ -14,8 +15,7 @@ from .const import (
     LOGGER,
     UPDATE_INTERVAL,
 )
-from .api import MealieApi
-from .models import About, MealPlan, MealieData
+from .models import About, MealieData, MealPlan
 
 
 class MealieDataUpdateCoordinator(DataUpdateCoordinator[MealieData]):

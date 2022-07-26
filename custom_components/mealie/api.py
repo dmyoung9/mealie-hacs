@@ -8,8 +8,6 @@ from typing import Any
 import aiohttp
 import async_timeout
 
-from .const import LOGGER
-
 from .models import About, MealPlan, Recipe
 
 TIMEOUT = 10
@@ -70,8 +68,6 @@ class MealieApi:
         if response.status // 100 in [4, 5]:
             contents = await response.read()
             response.close()
-
-            LOGGER.error(contents)
 
             if content_type == "application/json":
                 raise MealieError(response.status, json.loads(contents.decode("utf8")))
